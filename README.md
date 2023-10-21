@@ -4,7 +4,6 @@ This repository contains documentation and code samples for using Kubernetes. Th
 
 In this repository, you will have a understanding of Kubernetes and how to use it. You will also learn how to deploy a Kubernetes cluster on your local machine using Minikube.
 
-
 ## What is Orchestration?
 
 Orchestration is the automated configuration, coordination, and management of computer systems and software. It helps to manage complex computer systems and services with ease. It is used to manage the lifecycle of containers. It is used to deploy, scale, and manage containerized applications.
@@ -62,3 +61,184 @@ Kubectl is a command-line tool that is used to deploy and manage applications on
 
 ![Alt text](image-3.png)
 
+## Pods
+
+A pod is the smallest unit of deployment in Kubernetes. It is a logical collection of one or more containers that are always co-located and co-scheduled. A pod is a group of one or more containers that share the same IP address and port space, are always co-located, and run in a shared context on the same node.
+
+![Alt text](image-4.png)
+
+## YAML in Kubernetes
+
+YAML is a human-readable data serialization language. It is used to write configuration files. It is used to write configuration files for Kubernetes. It is used to write configuration files for Kubernetes objects, such as pods, deployments, and services.
+
+Kubernetes defintion file always contain 4 parts:
+
+- apiVersion
+- kind
+- metadata
+- spec
+
+```yaml
+apiVersion: refers to the version of the Kubernetes API you want to use.
+kind: refers to the type of object you want to create.
+metadata:  refers to the data that uniquely identifies the object.
+spec: refers to the desired state of the object.
+```
+
+### How to deploy a pod?
+
+You can deploy pods using the commands kubectl run. The kubectl run command creates a deployment, and the kubectl create command creates a pod.
+
+```bash
+kubectl run nginx --image=nginx
+```
+
+Othe commands for pods are:
+
+```bash
+kubectl get pods
+kubectl get pods -o wide
+kubectl describe pods
+kubectl delete pods
+```
+
+Another way to deploy a pod is by creating a YAML file. The YAML file contains the configuration of the pod. You can create a YAML file using the command kubectl run --dry-run=client. The YAML file contains the configuration of the pod. You can create a YAML file using the command kubectl run --dry-run=client.
+
+```bash
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.14.2
+    ports:
+    - containerPort: 80
+```
+
+to deploy the pod using the YAML file, run the command kubectl apply -f pod.yaml.
+
+```bash
+kubectl apply -f pod.yaml
+```
+
+## Replication Controller
+
+A replication controller is a Kubernetes object that ensures that a specified number of pod replicas are running at any given time. It is used to ensure that a specified number of pod replicas are running at any given time. It is used to ensure that a specified number of pod replicas are running at any given time.
+
+### Load Balancing Scaling
+
+Another reason we need replication controller is to create multiple PODs to share the load across them. For example, in this simple scenario we have a single POD serving
+a set of users. When the number of users increase we deploy additional POD to balance the load across the two pods. If the demand further increases and If we were to run out of resources on the first node, we could deploy additional PODs
+across other nodes in the cluster. As you can see, the replication controller spans across multiple nodes in the cluster. It helps us balance the load across multiple pods
+on different nodes as well as scale our application when the demand increases.
+![Alt text](image-5.png)
+
+### Replication Controller YAML
+
+```yaml
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: nginx-rc
+spec:
+## this will POD Template
+  template:
+    metadata:
+      name: nginx-pod
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx-container
+        image: nginx
+  replicas: 3
+```
+
+### Difference between ReplicaSet and Replication Controller
+
+ReplicaSet is the next-generation Replication Controller. It supports the new set-based selector requirements and label selectors. It is used to ensure that a specified number of pod replicas are running at any given time. It is used to ensure that a specified number of pod replicas are running at any given time.
+
+Selector is replica set is make sure if the pods are created outside the replica set but have the same label as the replica set then it will also manage those pods.
+  
+  ```yaml
+  apiVersion: apps/v1
+  kind: ReplicaSet
+  metadata:
+    name: nginx-rc
+  spec:
+    template:
+      metadata:
+        name: nginx-pod
+        labels:
+          app: nginx
+      spec:
+        containers:
+        - name: nginx-container
+          image: nginx
+    selector:
+      matchLabels:
+        app: nginx
+    replicas: 3
+  ```
+
+### Labels and Selectors
+
+Labels are key/value pairs that are attached to Kubernetes objects. They are used to organize and select subsets of objects. 
+Replica set uses labels to identify the set of pods it is responsible for managing.
+
+### Why do you need template section?
+
+Let's say you can use label and selctor to manage the pods for example you created pods from different file and you have used same label and selector in that case replica set will manage those pods as well.
+So do you really need template section? Yes, you need template section because you need to define the pod template which will be used by replica set to create the pods if the pods fail.
+
+## Type of Deployment Strategies
+
+- **Recreate/Rebuild**: In this strategy, the existing pods are destroyed and new pods are created. This strategy is used when you want to deploy a new version of your application. 
+
+## Common Commands
+
+- Get all the pods in the cluster
+
+```bash
+kubectl get pods
+```
+
+- Get all the pods in the cluster with more details
+
+```bash
+kubectl get pods -o wide
+```
+
+- Get detailed information about a pod
+
+```bash
+kubectl describe pod <pod-name>
+```
+
+- Apply yaml file
+
+```bash
+kubectl apply -f <file-name>
+```
+
+- Create ReplicaSet
+
+```bash
+kubectl create -f <file-name>
+```
+
+- Update replicas
+
+```bash
+kubectl scale --replicas=6 -f <file-name>
+OR
+kubectl replace -f <file-name>
+```
+
+- Describe ReplicaSet
+
+```bash
+kubectl describe replicaset <replicaset-name>
+```
