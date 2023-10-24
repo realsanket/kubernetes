@@ -193,9 +193,81 @@ Replica set uses labels to identify the set of pods it is responsible for managi
 Let's say you can use label and selctor to manage the pods for example you created pods from different file and you have used same label and selector in that case replica set will manage those pods as well.
 So do you really need template section? Yes, you need template section because you need to define the pod template which will be used by replica set to create the pods if the pods fail.
 
-## Type of Deployment Strategies
+## Deployments
 
-- **Recreate/Rebuild**: In this strategy, the existing pods are destroyed and new pods are created. This strategy is used when you want to deploy a new version of your application. 
+A deployment is a Kubernetes object that manages a replicated application. It is used to manage the lifecycle of pods. It is used to manage the lifecycle of pods. It is used to manage the lifecycle of pods.
+
+### Why do we need Deployments?
+
+Whene we need to update the application we need to delete the pods and create new pods with updated application. This is not a good approach because it will cause downtime. To avoid downtime we need to use deployments.
+
+### How to create a deployment?
+
+We just replace the kind from ReplicaSet to Deployment and we are done.
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    metadata:
+      name: nginx-pod
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx-container
+        image: nginx
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+```
+
+To deploy the deployment using the YAML file, run the command kubectl apply -f deployment.yaml.
+
+```bash
+kubectl apply -f deployment.yaml
+```
+
+### How to update the deployment?
+
+We just need to change the image in the deployment file and run the same command again.
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    metadata:
+      name: nginx-pod
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx-container
+        image: nginx:1.16.1
+  replicas: 3
+```
+
+To deploy the deployment using the YAML file, run the command kubectl apply -f deployment.yaml.
+
+```bash
+kubectl apply -f deployment.yaml
+```
+
+### How to rollback the deployment?
+
+We just need to run the command kubectl rollout undo deployment <deployment-name>.
+
+```bash
+kubectl rollout undo deployment nginx-deployment
+```
+
 
 ## Common Commands
 
@@ -242,3 +314,39 @@ kubectl replace -f <file-name>
 ```bash
 kubectl describe replicaset <replicaset-name>
 ```
+
+- Deploy Deployment
+
+```bash
+kubectl create -f <file-name>
+```
+
+- Update Deployment
+
+```bash
+kubectl apply -f <file-name>
+```
+
+- Describe Deployment
+
+```bash
+kubectl describe deployment <deployment-name>
+```
+
+- Rollback Deployment
+
+```bash
+kubectl rollout undo deployment <deployment-name>
+```
+
+- Deployment Logs
+
+```bash
+kubectl logs <pod-name>
+```
+
+- Get All
+  
+  ```bash
+  kubectl get all
+  ```
